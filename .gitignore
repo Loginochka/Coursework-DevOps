@@ -1,0 +1,6 @@
+*.tfvars
+*.terraform*
+*.vscode*
+terraform.tfstate
+terraform.tfstate.backup
+Coursework_ssh*
