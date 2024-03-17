@@ -7,3 +7,6 @@ variable "folder" {
 variable "cloud" {
   sensitive   = true
 }
+variable "dbuserpass" {
+  sensitive = true
+}
