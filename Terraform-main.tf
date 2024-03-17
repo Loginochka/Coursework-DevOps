@@ -194,7 +194,7 @@ resource "yandex_compute_instance" "vm-nginx-1" {
   }
 
     metadata = {
-        user-data = "${file("./meta.txt")}"        
+        user-data = "${file("meta-vm.txt")}"
     }
 }
 resource "yandex_compute_instance" "vm-nginx-2" {
@@ -224,7 +224,7 @@ resource "yandex_compute_instance" "vm-nginx-2" {
   }
 
     metadata = {
-        user-data = "${file("./meta.txt")}"        
+        user-data = "${file("meta-vm.txt")}"
     }
 }
 resource "yandex_compute_instance" "vm-kibana" {
@@ -255,7 +255,7 @@ resource "yandex_compute_instance" "vm-kibana" {
   }
 
     metadata = {
-        user-data = "${file("./meta.txt")}"        
+        user-data = "${file("meta-vm.txt")}"
     }
 }
 resource "yandex_compute_instance" "vm-elastic" {
@@ -285,7 +285,7 @@ resource "yandex_compute_instance" "vm-elastic" {
   }
 
     metadata = {
-        user-data = "${file("./meta.txt")}"        
+        user-data = "${file("meta-vm.txt")}"
     }
 }
 resource "yandex_compute_instance" "vm-zbx-front" {
@@ -316,7 +316,7 @@ resource "yandex_compute_instance" "vm-zbx-front" {
   }
 
     metadata = {
-        user-data = "${file("./meta.txt")}"        
+        user-data = "${file("meta-vm.txt")}"
     }
 }
 resource "yandex_compute_instance" "vm-zbx-server" {
@@ -330,6 +330,7 @@ resource "yandex_compute_instance" "vm-zbx-server" {
   resources {
     cores  = 2
     memory = 2
+    
   }
 
   boot_disk {
@@ -346,7 +347,7 @@ resource "yandex_compute_instance" "vm-zbx-server" {
   }
 
     metadata = {
-        user-data = "${file("./meta.txt")}"        
+        user-data = "${file("meta-vm.txt")}"
     }
 }
 resource "yandex_compute_instance" "vm-bastion" {
@@ -377,59 +378,58 @@ resource "yandex_compute_instance" "vm-bastion" {
   }
 
     metadata = {
-        user-data = "${file("./meta.txt")}"        
+        user-data = "${file("meta.txt")}"        
     }
 }
-
 #_____High-Availability PostgreSQL Cluster _______
-resource "yandex_mdb_postgresql_cluster" "zabbix-db-cluster" {
-  name        = "zabbix-db-cluster"
-  environment = "PRODUCTION"
-  network_id  = "${yandex_vpc_network.cod.id}"
-  security_group_ids = ["${yandex_vpc_security_group.zabbix-back.id}"]
-  deletion_protection = "false"
-  host_master_name = "zabbix-master-a"
-  config {
-    version = 15
-    autofailover = "true"
-    resources {
-      resource_preset_id = "s2.micro"
-      disk_type_id       = "network-hdd"
-      disk_size          = 16
-    }
-  }
+# resource "yandex_mdb_postgresql_cluster" "zabbix-db-cluster" {
+#   name        = "zabbix-db-cluster"
+#   environment = "PRODUCTION"
+#   network_id  = "${yandex_vpc_network.cod.id}"
+#   security_group_ids = ["${yandex_vpc_security_group.zabbix-back.id}"]
+#   deletion_protection = "false"
+#   host_master_name = "zabbix-master-a"
+#   config {
+#     version = 15
+#     autofailover = "true"
+#     resources {
+#       resource_preset_id = "s2.micro"
+#       disk_type_id       = "network-hdd"
+#       disk_size          = 16
+#     }
+#   }
 
-  maintenance_window {
-    type = "ANYTIME"
-  }
+#   maintenance_window {
+#     type = "ANYTIME"
+#   }
 
-  host {
-    zone      = "ru-central1-a"
-    subnet_id = yandex_vpc_subnet.private-a.id
-    name = "zabbix-node-1"
-  }
+#   host {
+#     zone      = "ru-central1-a"
+#     subnet_id = yandex_vpc_subnet.private-a.id
+#     name = "zabbix-node-1"
+#   }
 
-  host {
-    zone      = "ru-central1-b"
-    subnet_id = yandex_vpc_subnet.private-b.id
-    name = "zabbix-node-2"
-  }
-}
-resource "yandex_mdb_postgresql_database" "zabbix" {
-  cluster_id = yandex_mdb_postgresql_cluster.zabbix-db-cluster.id
-  name = "zabbix"
-  owner = yandex_mdb_postgresql_user.zabbix.name
-  lc_collate = "en_US.UTF-8"
-  lc_type    = "en_US.UTF-8"
-  depends_on = [ yandex_mdb_postgresql_user.zabbix ]
-}
-resource "yandex_mdb_postgresql_user" "zabbix" {
-  cluster_id = "${yandex_mdb_postgresql_cluster.zabbix-db-cluster.id}"
-  name = "zabbix"
-  password = var.dbuserpass
-  deletion_protection = "false"
+#   host {
+#     zone      = "ru-central1-b"
+#     subnet_id = yandex_vpc_subnet.private-b.id
+#     name = "zabbix-node-2"
+#   }
+# }
+# resource "yandex_mdb_postgresql_database" "zabbix" {
+#   cluster_id = yandex_mdb_postgresql_cluster.zabbix-db-cluster.id
+#   name = "zabbix"
+#   owner = yandex_mdb_postgresql_user.zabbix.name
+#   lc_collate = "en_US.UTF-8"
+#   lc_type    = "en_US.UTF-8"
+#   depends_on = [ yandex_mdb_postgresql_user.zabbix ]
+# }
+# resource "yandex_mdb_postgresql_user" "zabbix" {
+#   cluster_id = "${yandex_mdb_postgresql_cluster.zabbix-db-cluster.id}"
+#   name = "zabbix"
+#   password = var.dbuserpass
+#   deletion_protection = "false"
 
-}
+# }
 
 #___________Snapshots_______________________
 resource "yandex_compute_snapshot_schedule" "instance-snap-schedule" {
