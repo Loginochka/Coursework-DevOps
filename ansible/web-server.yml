@@ -1,0 +1,25 @@
+---
+- name: Packages installation
+  hosts: web-server
+  become: yes
+  tasks:
+  - name: Install nginx
+    apt:
+      name: nginx
+      state: latest
+  - name: restart nginx
+    service:
+      name: nginx
+      state: started
+      enabled: true
+  - name: Check nginx for 200
+    uri:
+      url: http://localhost:80
+      status_code: 200
+      return_content: true
+    register: result
+  - name: Install zabbix-agent
+    apt:
+      name: zabbix-agent
+      state: latest
+    ...

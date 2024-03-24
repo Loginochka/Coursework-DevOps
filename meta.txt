@@ -1,8 +1,13 @@
 #cloud-config
+repo_update: true
+repo_upgrade: true
+apt:
+  preserve_sources_list: true
 users:
-  - name: danil
+  - name: bastion
     groups: sudo
     shell: /bin/bash
     sudo: 'ALL=(ALL) NOPASSWD:ALL'
     ssh-authorized-keys:
       - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOGEWmN1JQBWyQfa3DEPcOjb2l3s1UfUMjUI2UlWuz9U danil@winXI
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBxN3fSWi3K8i54Gpuf3vXKGVR2N0rdz0On/DPyzY8QU ansible-vm@winXI
