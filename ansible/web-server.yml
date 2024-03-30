@@ -1,13 +1,14 @@
 ---
-- name: Packages installation
-  hosts: web-server
+- name: After startup installation
+  hosts: web_server
   become: yes
   tasks:
   - name: Install nginx
     apt:
       name: nginx
+      update_cache: yes
       state: latest
-  - name: restart nginx
+  - name: Start nginx
     service:
       name: nginx
       state: started
@@ -17,9 +18,56 @@
       url: http://localhost:80
       status_code: 200
       return_content: true
-    register: result
   - name: Install zabbix-agent
     apt:
       name: zabbix-agent
       state: latest
-    ...
+  - name: Change zabbix-conf-1
+    replace:
+      path: /etc/zabbix/zabbix_agentd.conf
+      regexp: '^Server=127.0.0.1'
+      replace: Server=ru-zbxs-a.local
+    notify:
+      - Restart zabbix
+  - name: Change zabbix-conf-2
+    replace:
+      path: /etc/zabbix/zabbix_agentd.conf
+      regexp: '^ServerActive=127.0.0.1'
+      replace: ServerActive=ru-zbxs-a.local
+    notify:
+      - Restart zabbix
+  - name: Change zabbix-conf-3
+    lineinfile:
+      path: /etc/zabbix/zabbix_agentd.conf
+      line: Hostname={{ inventory_hostname }}
+    notify:
+      - Restart zabbix
+  - name: Download filebeat
+    copy:
+      src: /tmp/filebeat-8.13.0-amd64.deb
+      dest: /tmp/filebeat-8.13.0-amd64.deb
+      owner: '{{ ansible_user }}'
+      group: '{{ ansible_user }}'
+      mode: '0655'
+  - name: Install filebeat
+    apt:
+      deb: /tmp/filebeat-8.13.0-amd64.deb
+  - name: Change config filebeat
+    copy:
+      src: /tmp/filebeat.yml
+      dest: /etc/filebeat/filebeat.yml
+      owner: '{{ ansible_user }}'
+      group: '{{ ansible_user }}'
+      mode: '0666'
+      backup: true
+    notify:
+      - Restart filebeat
+  handlers:
+    - name: Restart zabbix
+      service:
+        name: zabbix-agent
+        state: restarted
+    - name: Restart filebeat
+      service:
+        name: filebeat
+        state: restarted  
