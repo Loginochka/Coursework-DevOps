@@ -6,3 +6,4 @@ terraform.tfstate.backup
 Coursework_ssh*
 terraform-inventory.exe
 inv.txt
+*.deb

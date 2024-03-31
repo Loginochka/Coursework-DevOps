@@ -1,0 +1,54 @@
+---
+- name: Zabbix-server installation
+  hosts: zbx_server
+  become: true
+  vars_files:
+  - vars.yml
+  pre_tasks:
+    - name: Download zabbix repo
+      get_url:
+        url: >-
+          https://repo.zabbix.com/zabbix/6.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.4-1+ubuntu22.04_all.deb
+        dest: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '0777'
+      
+    - name: Add zabbix repo
+      apt:
+        deb: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
+      
+    - name: Update repo
+      apt:
+        update_cache: yes
+
+    - name: Install packages
+      apt: 
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - zabbix-sql-scripts
+        - zabbix-server-pgsql
+        - pip
+        - acl
+        - zabbix-agent
+  tasks:
+    - name: Change DBHost
+      replace:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: '# DBHost=localhost'
+        replace: DBHost=ru-zbxd-a.local
+      notify:
+      - Restart Zabbix-server
+    - name: Change DBPassword
+      replace:
+        path: /etc/zabbix/zabbix_server.conf
+        regexp: '# DBPassword='
+        replace: DBPassword={{ db_password}}
+      notify:
+      - Restart Zabbix-server
+  handlers:
+    - name: Restart Zabbix-server
+      service:
+        name: zabbix-server
+        state: restarted

@@ -1,0 +1,101 @@
+---
+- name: Zabbix Database installation
+  hosts: zbx_DB
+  become: true
+  vars_files:
+    - vars.yml
+  pre_tasks:
+    - name: Download zabbix repo
+      get_url:
+        url: >-
+          https://repo.zabbix.com/zabbix/6.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.4-1+ubuntu22.04_all.deb
+        dest: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '0777'
+      
+    - name: Add zabbix repo
+      apt:
+        deb: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
+      
+    - name: Update repo
+      apt:
+        update_cache: yes
+
+    - name: Install packages
+      apt: 
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - postgresql
+        - zabbix-sql-scripts
+        - zabbix-server-pgsql
+        - pip
+        - acl
+        - net-tools
+
+    - name: Install Python packages
+      pip: 
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - psycopg2-binary
+      
+  tasks:
+    - name: Start and enable services
+      service: 
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - postgresql
+        
+    - name: Create DB user
+      postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+      become_user: postgres
+ 
+    - name: Create DB
+      postgresql_db:
+        name: "{{ db_name }}"
+        encoding: UTF-8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+        owner: zabbix
+      become_user: postgres
+
+    - name: Grant user
+      postgresql_privs:
+        type: database
+        database: "{{ db_name }}"
+        roles: zabbix
+        grant_option: 'no'
+        privs: all
+      become_user: postgres
+
+    - name: Restore database
+      shell: 
+        cmd: zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | sudo -u zabbix psql zabbix
+
+    - name: Change pg_hba
+      postgresql_pg_hba:
+        dest: /etc/postgresql/14/main/pg_hba.conf
+        address: all
+        contype: host
+        databases: zabbix
+        method: "password"
+        users: "{{ db_user }}"
+        create: true
+      become: yes
+      become_user: postgres
+
+    - name: Change postgresql.conf 
+      lineinfile:
+        path:  /etc/postgresql/14/main/postgresql.conf
+        line: listen_addresses = '*'
+        
+    - name: Restart postgresql
+      service:
+        name: postgresql
+        state: restarted
