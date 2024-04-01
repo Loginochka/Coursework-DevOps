@@ -3,50 +3,50 @@
   hosts: zbx_front
   become: yes
   tasks:
-  - name: Download zabbix repo
-    get_url:
-      url: https://repo.zabbix.com/zabbix/6.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.4-1+ubuntu22.04_all.deb
-      dest: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
-      owner: '{{ ansible_user }}'
-      group: '{{ ansible_user }}'
-      mode: '0777'
-  - name: Add zabbix repo
-    apt: 
-      deb: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
-      update_cache: yes
-  - name: Install zabbix-frontend
-    apt:
-      pkg:
-      - zabbix-nginx-conf
-      - zabbix-frontend-php
-      - php8.1-pgsql
-      - zabbix-sql-scripts
-      update_cache: yes
-  - name: Change default nginx port ip_v4
-    replace:
-      path:  /etc/nginx/sites-enabled/default
-      regexp: 'listen 80 default_server'
-      replace: listen 8080 default_server
-  - name: Change default nginx port ip_v6
-    replace:
-      path:  /etc/nginx/sites-enabled/default
-      regexp: 'listen \[::]:80 default_server'
-      replace: listen [::]:8080 default_server
-  - name: Change zabbix default port for nginx 
-    replace:
-      path:  /etc/zabbix/nginx.conf
-      regexp: '^#\s*listen\s+8080;'
-      replace: listen 80;
-  - name: Change zabbix default DNS for nginx
-    replace:
-      path:  /etc/zabbix/nginx.conf
-      regexp: '^#\s*server_name\s+example.com;'
-      replace: server_name ru-zbxf-a.local;
-  - name: Restart nginx
-    service:
-      name: nginx
-      state: restarted
-  - name: Restart php8.1-fpm
-    service:
-      name: php8.1-fpm
-      state: restarted
+    - name: Download zabbix repo
+      get_url:
+        url: https://repo.zabbix.com/zabbix/6.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.4-1+ubuntu22.04_all.deb
+        dest: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0777"
+    - name: Add zabbix repo
+      apt:
+        deb: /tmp/zabbix-release_6.4-1+ubuntu22.04_all.deb
+        update_cache: yes
+    - name: Install zabbix-frontend
+      apt:
+        pkg:
+          - zabbix-nginx-conf
+          - zabbix-frontend-php
+          - php8.1-pgsql
+          - zabbix-sql-scripts
+        update_cache: yes
+    - name: Change default nginx port for ip_v4
+      replace:
+        path: /etc/nginx/sites-enabled/default
+        regexp: "listen 80 default_server"
+        replace: listen 8080 default_server
+    - name: Change default nginx port for ip_v6
+      replace:
+        path: /etc/nginx/sites-enabled/default
+        regexp: 'listen \[::]:80 default_server'
+        replace: listen [::]:8080 default_server
+    - name: Change zabbix default port for nginx
+      replace:
+        path: /etc/zabbix/nginx.conf
+        regexp: '^#\s*listen\s+8080;'
+        replace: listen 80;
+    - name: Change zabbix default DNS for nginx
+      replace:
+        path: /etc/zabbix/nginx.conf
+        regexp: '^#\s*server_name\s+example.com;'
+        replace: server_name ru-zbxf-a.local;
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+    - name: Restart php8.1-fpm
+      service:
+        name: php8.1-fpm
+        state: restarted
