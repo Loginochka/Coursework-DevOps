@@ -46,6 +46,13 @@
       service:
         name: nginx
         state: restarted
+    - name: Copy start-up config
+      copy:
+        src: /tmp/zabbix.conf.php
+        dest: /etc/zabbix/web/zabbix.conf.php
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '0666'
     - name: Restart php8.1-fpm
       service:
         name: php8.1-fpm
