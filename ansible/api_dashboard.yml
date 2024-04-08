@@ -1,0 +1,51 @@
+---
+- name: Access Zabbix Server via API
+  hosts: zbx_front
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Start session
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "user.login","params": {"username": "{{ zabbix_user }}","password": "{{ zabbix_password }}",},"id": 1, "auth": null}'
+        body_format: "json"
+        headers: 
+          Content-Type: "application/json"
+      register: login
+      failed_when: login.status != 200
+    - name: Get token 
+      set_fact:
+        token: "{{ login.json.result }}"
+    - name: Read contents of the file
+      ansible.builtin.slurp:    
+        src: "{{ lookup() }}/dashboard_data.json"
+      register: file_content
+
+    - name: Create dashboard in Zabbix
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body_format: raw
+        body: "{{ file_content.content | b64decode }}"
+        headers:
+          Content-Type: application/json
+          Authorization: "Bearer {{ token }}"
+        auth: 
+          "{{ token }}"
+        id: 2
+      register: response
+    - debug:
+        var: response.json
+
+    - name: Ens session
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "user.logout","params": {},"id": 3,"auth": "{{ token }}" }'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+      register: response
+      failed_when: response.status != 200

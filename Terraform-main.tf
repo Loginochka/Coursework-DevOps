@@ -18,8 +18,8 @@ resource "yandex_iam_service_account" "terradmin" {
 }
 resource "yandex_resourcemanager_folder_iam_member" "admin" {
   folder_id = var.folder
-  role       = "admin"
-  member     = "serviceAccount:${yandex_iam_service_account.terradmin.id}"
+  role      = "admin"
+  member    = "serviceAccount:${yandex_iam_service_account.terradmin.id}"
   depends_on = [
     yandex_iam_service_account.terradmin,
   ]
@@ -189,7 +189,7 @@ resource "yandex_resourcemanager_folder_iam_member" "admin" {
 #       subnet_id = "${yandex_vpc_subnet.private-a.id}"
 #     }
 #   }
-  
+
 #   listener {
 #     name = "alb-listener"
 #     endpoint {
@@ -214,76 +214,82 @@ resource "yandex_resourcemanager_folder_iam_member" "admin" {
 # }
 
 #______________Instance___________________________
-# resource "yandex_compute_instance" "vm-nginx-1" {
-#   name        = "vm-nginx-1"
-#   platform_id = "standard-v1"
-#   zone        = "ru-central1-a"
-#   folder_id = var.folder
-#   service_account_id  = yandex_iam_service_account.terradmin.id
-#   depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
-#   hostname = "ru-ngx-a.local"
-#   resources {
-#     cores  = 2
-#     memory = 2
-#   }
+resource "yandex_compute_instance" "vm-nginx-1" {
+  name               = "vm-nginx-1"
+  platform_id        = "standard-v1"
+  zone               = "ru-central1-a"
+  folder_id          = var.folder
+  service_account_id = yandex_iam_service_account.terradmin.id
+  depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
+  hostname           = "ru-ngx-a.local"
+  resources {
+    cores  = 2
+    memory = 2
+  }
 
-#   boot_disk {
-#     mode = "READ_WRITE"
-#     initialize_params {
-#       image_id               = "fd8hnnsnfn3v88bk0k1o"
-#       size                   = 20
-#     }
-#   }
+  boot_disk {
+    mode = "READ_WRITE"
+    initialize_params {
+      image_id = "fd8hnnsnfn3v88bk0k1o"
+      size     = 20
+    }
+  }
 
-#   network_interface {
-#     subnet_id = "${yandex_vpc_subnet.private-a.id}"
-#     security_group_ids = ["${yandex_vpc_security_group.web-server.id}"]
-#     nat = "true"
-#   }
+  network_interface {
+    subnet_id          = yandex_vpc_subnet.private-a.id
+    security_group_ids = ["${yandex_vpc_security_group.web-server.id}"]
+    nat                = "true"
+  }
 
-#     metadata = {
-#         user-data = "${file("meta-vm.txt")}"
-#     }
-# }
-# resource "yandex_compute_instance" "vm-nginx-2" {
-#   name        = "vm-nginx-2"
-#   platform_id = "standard-v1"
-#   zone        = "ru-central1-b"
-#   folder_id = var.folder
-#   service_account_id  = yandex_iam_service_account.terradmin.id
-#   depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
-#   hostname = "ru-ngx-b.local"
-#   resources {
-#     cores  = 2
-#     memory = 2
-#   }
+  metadata = {
+    user-data = "${file("meta-vm.txt")}"
+  }
+  timeouts {
+    create = "60m"
+  }
+}
+resource "yandex_compute_instance" "vm-nginx-2" {
+  name               = "vm-nginx-2"
+  platform_id        = "standard-v1"
+  zone               = "ru-central1-b"
+  folder_id          = var.folder
+  service_account_id = yandex_iam_service_account.terradmin.id
+  depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
+  hostname           = "ru-ngx-b.local"
+  resources {
+    cores  = 2
+    memory = 2
+  }
 
-#   boot_disk {
-#     mode = "READ_WRITE"
-#     initialize_params {
-#       image_id               = "fd8hnnsnfn3v88bk0k1o"
-#       size                   = 20
-#     }
-#   }
+  boot_disk {
+    mode = "READ_WRITE"
+    initialize_params {
+      image_id = "fd8hnnsnfn3v88bk0k1o"
+      size     = 20
+    }
+  }
 
-#   network_interface {
-#     subnet_id = "${yandex_vpc_subnet.private-b.id}"
-#     security_group_ids = ["${yandex_vpc_security_group.web-server.id}"]
-#     nat = "true"
-#   }
+  network_interface {
+    subnet_id          = yandex_vpc_subnet.private-b.id
+    security_group_ids = ["${yandex_vpc_security_group.web-server.id}"]
+    nat                = "true"
+  }
 
-#     metadata = {
-#         user-data = "${file("meta-vm.txt")}"
-#     }
-# }
+  metadata = {
+    user-data = "${file("meta-vm.txt")}"
+  }
+  timeouts {
+    create = "60m"
+  }
+}
 # resource "yandex_compute_instance" "vm-kibana" {
-#   name        = "vm-kibana"
-#   platform_id = "standard-v1"
-#   zone        = "ru-central1-a"
-#   hostname = "ru-kbn-a.local"
-#   folder_id = var.folder
-#   service_account_id  = yandex_iam_service_account.terradmin.id
-#   depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
+#   name               = "vm-kibana"
+#   platform_id        = "standard-v1"
+#   zone               = "ru-central1-a"
+#   hostname           = "ru-kbn-a.local"
+#   folder_id          = var.folder
+#   service_account_id = yandex_iam_service_account.terradmin.id
+#   depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
 #   resources {
 #     cores  = 2
 #     memory = 2
@@ -291,57 +297,63 @@ resource "yandex_resourcemanager_folder_iam_member" "admin" {
 #   boot_disk {
 #     mode = "READ_WRITE"
 #     initialize_params {
-#       image_id               = "fd8hnnsnfn3v88bk0k1o"
-#       size                   = 20
+#       image_id = "fd8hnnsnfn3v88bk0k1o"
+#       size     = 20
 #     }
 #   }
 #   network_interface {
-#     subnet_id = "${yandex_vpc_subnet.public.id}"
+#     subnet_id          = yandex_vpc_subnet.public.id
 #     security_group_ids = ["${yandex_vpc_security_group.kibana.id}"]
-#     nat = "true"
+#     nat                = "true"
 #   }
 
-#      metadata = {
-#          user-data = "${file("meta-vm.txt")}"
-#      }
-#  }
+#   metadata = {
+#     user-data = "${file("meta-vm.txt")}"
+#   }
+#   timeouts {
+#     create = "60m"
+#   }
+# }
 # resource "yandex_compute_instance" "vm-elastic" {
-#   name        = "vm-elastic"
-#   platform_id = "standard-v1"
-#   zone        = "ru-central1-a"
-#   hostname = "ru-elk-a.local"
-#   folder_id = var.folder
-#   service_account_id  = yandex_iam_service_account.terradmin.id
-#   depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
+#   name               = "vm-elastic"
+#   platform_id        = "standard-v1"
+#   zone               = "ru-central1-a"
+#   hostname           = "ru-elk-a.local"
+#   folder_id          = var.folder
+#   service_account_id = yandex_iam_service_account.terradmin.id
+#   depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
 #   resources {
 #     cores  = 2
 #     memory = 2
 #   }
-#    boot_disk {
-#      mode = "READ_WRITE"
-#      initialize_params {
-#        image_id               = "fd8hnnsnfn3v88bk0k1o"
-#        size                   = 20
-#      }
+#   boot_disk {
+#     mode = "READ_WRITE"
+#     initialize_params {
+#       image_id = "fd8hnnsnfn3v88bk0k1o"
+#       size     = 20
+#     }
 #   }
-#    network_interface {
-#      subnet_id = "${yandex_vpc_subnet.private-a.id}"
-#      security_group_ids = ["${yandex_vpc_security_group.ELK.id}"]
-#      nat = "true"
+#   network_interface {
+#     subnet_id          = yandex_vpc_subnet.private-a.id
+#     security_group_ids = ["${yandex_vpc_security_group.ELK.id}"]
+#     nat                = "true"
 #   }
 
-#      metadata = {
-#          user-data = "${file("meta-vm.txt")}"
-#      }
+#   metadata = {
+#     user-data = "${file("meta-vm.txt")}"
+#   }
+#   timeouts {
+#     create = "60m"
+#   }
 # }
 resource "yandex_compute_instance" "vm-zbx-front" {
-  name        = "vm-zbx-front"
-  platform_id = "standard-v1"
-  zone        = "ru-central1-a"
-  folder_id = var.folder
-  hostname = "ru-zbxf-a.local"
-  service_account_id  = yandex_iam_service_account.terradmin.id
-  depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
+  name               = "vm-zbx-front"
+  platform_id        = "standard-v1"
+  zone               = "ru-central1-a"
+  folder_id          = var.folder
+  hostname           = "ru-zbxf-a.local"
+  service_account_id = yandex_iam_service_account.terradmin.id
+  depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
   resources {
     cores  = 2
     memory = 2
@@ -349,28 +361,31 @@ resource "yandex_compute_instance" "vm-zbx-front" {
   boot_disk {
     mode = "READ_WRITE"
     initialize_params {
-      image_id               = "fd8hnnsnfn3v88bk0k1o"
-      size                   = 20
+      image_id = "fd8hnnsnfn3v88bk0k1o"
+      size     = 20
     }
   }
   network_interface {
-    subnet_id = "${yandex_vpc_subnet.public.id}"
+    subnet_id          = yandex_vpc_subnet.public.id
     security_group_ids = ["${yandex_vpc_security_group.zabbix-front.id}"]
-    nat = "true"
+    nat                = "true"
   }
 
-     metadata = {
-         user-data = "${file("meta-vm.txt")}"
-     }
+  metadata = {
+    user-data = "${file("meta-vm.txt")}"
+  }
+  timeouts {
+    create = "60m"
+  }
 }
 resource "yandex_compute_instance" "vm-zbx-db" {
-  name        = "vm-zbx-db"
-  platform_id = "standard-v1"
-  zone        = "ru-central1-a"
-  folder_id = var.folder
-  hostname = "ru-zbxd-a.local"
-  service_account_id  = yandex_iam_service_account.terradmin.id
-  depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
+  name               = "vm-zbx-db"
+  platform_id        = "standard-v1"
+  zone               = "ru-central1-a"
+  folder_id          = var.folder
+  hostname           = "ru-zbxd-a.local"
+  service_account_id = yandex_iam_service_account.terradmin.id
+  depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
   resources {
     cores  = 4
     memory = 8
@@ -378,59 +393,65 @@ resource "yandex_compute_instance" "vm-zbx-db" {
   boot_disk {
     mode = "READ_WRITE"
     initialize_params {
-      image_id               = "fd8hnnsnfn3v88bk0k1o"
-      size                   = 40
+      image_id = "fd8hnnsnfn3v88bk0k1o"
+      size     = 40
     }
   }
   network_interface {
-    subnet_id = "${yandex_vpc_subnet.private-a.id}"
+    subnet_id          = yandex_vpc_subnet.private-a.id
     security_group_ids = ["${yandex_vpc_security_group.zabbix-back.id}"]
-    nat = "true"
+    nat                = "true"
   }
 
-    metadata = {
-        user-data = "${file("meta-vm.txt")}"
-    }
+  metadata = {
+    user-data = "${file("meta-vm.txt")}"
+  }
+  timeouts {
+    create = "60m"
+  }
 }
 resource "yandex_compute_instance" "vm-zbx-server" {
-  name        = "vm-zbx-server"
-  platform_id = "standard-v1"
-  zone        = "ru-central1-a"
-  hostname = "ru-zbxs-a.local"
-  folder_id = var.folder
-  service_account_id  = yandex_iam_service_account.terradmin.id
-  depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
+  name               = "vm-zbx-server"
+  platform_id        = "standard-v1"
+  zone               = "ru-central1-a"
+  hostname           = "ru-zbxs-a.local"
+  folder_id          = var.folder
+  service_account_id = yandex_iam_service_account.terradmin.id
+  depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
   resources {
     cores  = 2
     memory = 2
-  
+
   }
   boot_disk {
     mode = "READ_WRITE"
     initialize_params {
-      image_id               = "fd8hnnsnfn3v88bk0k1o"
-      size                   = 20
+      image_id = "fd8hnnsnfn3v88bk0k1o"
+      size     = 20
     }
   }
 
   network_interface {
-    subnet_id = "${yandex_vpc_subnet.private-a.id}"
+    subnet_id          = yandex_vpc_subnet.private-a.id
     security_group_ids = ["${yandex_vpc_security_group.zabbix-back.id}"]
-    nat = "true"
+    nat                = "true"
   }
 
-     metadata = {
-        user-data = "${file("meta-vm.txt")}"
-      }
+  metadata = {
+    user-data = "${file("meta-vm.txt")}"
+  }
+  timeouts {
+    create = "60m"
+  }
 }
 resource "yandex_compute_instance" "vm-bastion" {
-  name        = "vm-bastion"
-  platform_id = "standard-v1"
-  zone        = "ru-central1-a"
-  folder_id = var.folder
-  hostname = "ru-bst-a.local"
-  service_account_id  = yandex_iam_service_account.terradmin.id
-  depends_on          = [yandex_resourcemanager_folder_iam_member.admin]
+  name               = "vm-bastion"
+  platform_id        = "standard-v1"
+  zone               = "ru-central1-a"
+  folder_id          = var.folder
+  hostname           = "ru-bst-a.local"
+  service_account_id = yandex_iam_service_account.terradmin.id
+  depends_on         = [yandex_resourcemanager_folder_iam_member.admin]
   resources {
     cores  = 2
     memory = 2
@@ -439,20 +460,23 @@ resource "yandex_compute_instance" "vm-bastion" {
   boot_disk {
     mode = "READ_WRITE"
     initialize_params {
-      image_id               = "fd8hnnsnfn3v88bk0k1o"
-      size                   = 20
+      image_id = "fd8hnnsnfn3v88bk0k1o"
+      size     = 20
     }
   }
 
   network_interface {
-    subnet_id = "${yandex_vpc_subnet.public.id}"
+    subnet_id          = yandex_vpc_subnet.public.id
     security_group_ids = ["${yandex_vpc_security_group.bastion-host.id}"]
-    nat = "true"
+    nat                = "true"
   }
 
-    metadata = {
-        user-data = "${file("meta.txt")}"        
-    }
+  metadata = {
+    user-data = "${file("meta.txt")}"
+  }
+  timeouts {
+    create = "60m"
+  }
 }
 #___________Snapshots_______________________
 # resource "yandex_compute_snapshot_schedule" "instance-snap-schedule" {
@@ -479,213 +503,213 @@ resource "yandex_vpc_network" "cod" {
 resource "yandex_vpc_subnet" "private-a" {
   name           = "private-a"
   zone           = "ru-central1-a"
-  network_id     = "${yandex_vpc_network.cod.id}"
+  network_id     = yandex_vpc_network.cod.id
   v4_cidr_blocks = ["10.10.10.0/28"]
 }
 resource "yandex_vpc_subnet" "private-b" {
   name           = "private-b"
   zone           = "ru-central1-b"
-  network_id     = "${yandex_vpc_network.cod.id}"
+  network_id     = yandex_vpc_network.cod.id
   v4_cidr_blocks = ["10.10.11.0/28"]
 }
 resource "yandex_vpc_subnet" "public" {
   name           = "public"
   zone           = "ru-central1-a"
-  network_id     = "${yandex_vpc_network.cod.id}"
+  network_id     = yandex_vpc_network.cod.id
   v4_cidr_blocks = ["10.10.20.0/28"]
 }
 #______________Security Group________________
 resource "yandex_vpc_security_group" "bastion-host" {
-  network_id = "${yandex_vpc_network.cod.id}"
-  name = "Bastion host via SSH"
+  network_id = yandex_vpc_network.cod.id
+  name       = "Bastion host via SSH"
   ingress {
-    protocol = "TCP"
-    port = "22"
+    protocol       = "TCP"
+    port           = "22"
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
-    protocol = "TCP"
-    port = "22"
+    protocol       = "TCP"
+    port           = "22"
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
-# resource "yandex_vpc_security_group" "web-server" {
-#   network_id = "${yandex_vpc_network.cod.id}"
-#   name = "SG for web server"
-#   ingress {
-#     protocol = "TCP"
-#     predefined_target = "loadbalancer_healthchecks"
-#   }
-#     ingress {
-#     protocol = "ANY"
-#     from_port = 0
-#     to_port = 65535
-#     predefined_target = "self_security_group"
-#   }
-#   ingress {
-#     protocol = "TCP"
-#     port = 22
-#     security_group_id = yandex_vpc_security_group.bastion-host.id
-#   }
-#   ingress {
-#     protocol = "TCP"
-#     port = "443"
-#     v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
-#   }
-#   ingress {
-#     protocol = "ANY"
-#     port = "80"
-#     v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
-#   }
-#   ingress {
-#     protocol = "ANY"
-#     from_port = "10050"
-#     to_port = "10051"
-#     description = "Zabbix"
-#     v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
-#   }
-#   ingress {
-#     protocol = "ANY"
-#     port = "5601"
-#     description = "Kibana"
-#     v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
-#   }
-#   ingress {
-#     protocol = "ANY"
-#     port = "9200"
-#     description = "ELK"
-#     v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
-#   }
-#   egress {
-#     protocol = "ANY"
-#     v4_cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-# }
-resource "yandex_vpc_security_group" "zabbix-back" {
-  network_id = "${yandex_vpc_network.cod.id}"
-  name = "SG for Zabbix DB & Server"
+resource "yandex_vpc_security_group" "web-server" {
+  network_id = yandex_vpc_network.cod.id
+  name       = "SG for web server"
   ingress {
-    protocol = "ANY"
-    port = "5432"
+    protocol          = "TCP"
+    predefined_target = "loadbalancer_healthchecks"
+  }
+  ingress {
+    protocol          = "ANY"
+    from_port         = 0
+    to_port           = 65535
     predefined_target = "self_security_group"
   }
   ingress {
-    protocol = "ANY"
-    from_port = "10050"
-    to_port = "10053"
+    protocol          = "TCP"
+    port              = 22
+    security_group_id = yandex_vpc_security_group.bastion-host.id
+  }
+  ingress {
+    protocol       = "TCP"
+    port           = "443"
     v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
   }
   ingress {
-    protocol = "TCP"
-    port = "5432"
+    protocol       = "ANY"
+    port           = "80"
+    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
+  }
+  ingress {
+    protocol       = "ANY"
+    from_port      = "10050"
+    to_port        = "10053"
+    description    = "Zabbix"
+    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
+  }
+  ingress {
+    protocol       = "ANY"
+    port           = "5601"
+    description    = "Kibana"
+    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
+  }
+  ingress {
+    protocol       = "ANY"
+    port           = "9200"
+    description    = "ELK"
+    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
+  }
+  egress {
+    protocol       = "ANY"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+
+}
+resource "yandex_vpc_security_group" "zabbix-back" {
+  network_id = yandex_vpc_network.cod.id
+  name       = "SG for Zabbix DB & Server"
+  ingress {
+    protocol          = "ANY"
+    port              = "5432"
+    predefined_target = "self_security_group"
+  }
+  ingress {
+    protocol       = "ANY"
+    from_port      = "10050"
+    to_port        = "10053"
+    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
+  }
+  ingress {
+    protocol       = "TCP"
+    port           = "5432"
     v4_cidr_blocks = ["10.10.20.0/28"]
   }
   ingress {
-    protocol = "TCP"
-    port = "22"
-    security_group_id = "${yandex_vpc_security_group.bastion-host.id}"
+    protocol          = "TCP"
+    port              = "22"
+    security_group_id = yandex_vpc_security_group.bastion-host.id
   }
   egress {
-    protocol = "ANY"
+    protocol       = "ANY"
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
-resource "yandex_vpc_security_group" "ELK" {
-  network_id = "${yandex_vpc_network.cod.id}"
-  name = "SG for ELK"
-  ingress {
-    protocol = "ANY"
-    port = "9200"
-    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
-  }
-  ingress {
-    protocol = "TCP"
-    port = "22"
-    security_group_id = "${yandex_vpc_security_group.bastion-host.id}"
-  }
-  egress {
-    protocol = "ANY"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+# resource "yandex_vpc_security_group" "ELK" {
+#   network_id = yandex_vpc_network.cod.id
+#   name       = "SG for ELK"
+#   ingress {
+#     protocol       = "ANY"
+#     port           = "9200"
+#     v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
+#   }
+#   ingress {
+#     protocol          = "TCP"
+#     port              = "22"
+#     security_group_id = yandex_vpc_security_group.bastion-host.id
+#   }
+#   egress {
+#     protocol       = "ANY"
+#     v4_cidr_blocks = ["0.0.0.0/0"]
+#   }
+# }
 resource "yandex_vpc_security_group" "zabbix-front" {
-  network_id = "${yandex_vpc_network.cod.id}"
-  name = "Web zabbix"
+  network_id = yandex_vpc_network.cod.id
+  name       = "Web zabbix"
   ingress {
-    protocol = "TCP"
-    port = "22"
-    security_group_id = "${yandex_vpc_security_group.bastion-host.id}"
+    protocol          = "TCP"
+    port              = "22"
+    security_group_id = yandex_vpc_security_group.bastion-host.id
   }
   ingress {
-    protocol = "ANY"
-    port = "443"
+    protocol       = "ANY"
+    port           = "443"
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    protocol = "ANY"
-    port = "80"
-    v4_cidr_blocks = ["0.0.0.0/0"]
+    protocol       = "ANY"
+    port           = "80"
+    v4_cidr_blocks = ["0.0.0.0/0", "10.10.20.0/28"]
   }
-  ingress {
-    protocol = "ANY"
-    port = "5432"
-    security_group_id = "${yandex_vpc_security_group.zabbix-back.id}"
-  }
-  ingress {
-   protocol = "ANY"
-   from_port = "10050"
-   to_port = "10053"
-   security_group_id = "${yandex_vpc_security_group.zabbix-back.id}"
-  }
+  # ingress {
+  #   protocol          = "ANY"
+  #   port              = "5432"
+  #   security_group_id = yandex_vpc_security_group.zabbix-back.id
+  # }
+  # ingress {
+  #   protocol          = "ANY"
+  #   from_port         = "10050"
+  #   to_port           = "10053"
+  #   security_group_id = yandex_vpc_security_group.zabbix-back.id
+  # }
   egress {
-    protocol = "ANY"
+    protocol       = "ANY"
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
 # resource "yandex_vpc_security_group" "kibana" {
-#   network_id = "${yandex_vpc_network.cod.id}"
-#   name = "Kibana"
+#   network_id = yandex_vpc_network.cod.id
+#   name       = "Kibana"
 #   ingress {
-#     protocol = "ANY"
-#     port = "5601"
+#     protocol       = "ANY"
+#     port           = "5601"
 #     v4_cidr_blocks = ["10.10.10.0/28"]
 #   }
-#     ingress {
-#     protocol = "ANY"
-#     port = "22"
+#   ingress {
+#     protocol       = "ANY"
+#     port           = "22"
 #     v4_cidr_blocks = ["0.0.0.0/0"]
 #   }
-#     ingress {
-#     protocol = "ANY"
-#     port = "80"
+#   ingress {
+#     protocol       = "ANY"
+#     port           = "80"
 #     v4_cidr_blocks = ["0.0.0.0/0"]
 #   }
-#     ingress {
-#     protocol = "ANY"
-#     port = "443"
+#   ingress {
+#     protocol       = "ANY"
+#     port           = "443"
 #     v4_cidr_blocks = ["0.0.0.0/0"]
 #   }
-#     egress {
-#     protocol = "ANY"
+#   egress {
+#     protocol       = "ANY"
 #     v4_cidr_blocks = ["0.0.0.0/0"]
 #   }
 # }
 # resource "yandex_vpc_security_group" "ALB" {
-#   network_id = "${yandex_vpc_network.cod.id}"
-#   name = "SG for ALB"
+#   network_id = yandex_vpc_network.cod.id
+#   name       = "SG for ALB"
 #   ingress {
-#     protocol = "ANY"
-#     port = 80
+#     protocol       = "ANY"
+#     port           = 80
 #     v4_cidr_blocks = ["0.0.0.0/0"]
 #   }
 #   ingress {
-#     protocol = "ANY"
-#     port = 443
+#     protocol       = "ANY"
+#     port           = 443
 #     v4_cidr_blocks = ["0.0.0.0/0"]
 #   }
 #   egress {
-#     protocol = "ANY"
+#     protocol       = "ANY"
 #     v4_cidr_blocks = ["0.0.0.0/0"]
 #   }
 # }

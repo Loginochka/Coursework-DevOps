@@ -17,11 +17,20 @@
     - name: Install zabbix-frontend
       apt:
         pkg:
+          - pip
           - zabbix-nginx-conf
           - zabbix-frontend-php
           - php8.1-pgsql
           - zabbix-sql-scripts
         update_cache: yes
+    - name: Install Python packages
+      pip: 
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - zabbix-api
+        - py-zabbix
+        - jmespath
     - name: Change default nginx port for ip_v4
       replace:
         path: /etc/nginx/sites-enabled/default
@@ -48,7 +57,7 @@
         state: restarted
     - name: Copy start-up config
       copy:
-        src: /tmp/zabbix.conf.php
+        src: /home/ansible-vm/zabbix.conf.php
         dest: /etc/zabbix/web/zabbix.conf.php
         owner: '{{ ansible_user }}'
         group: '{{ ansible_user }}'

@@ -47,13 +47,6 @@
         replace: DBPassword={{ db_password}}
       notify:
         - Restart Zabbix-server
-    - name: Change source ip zabbix zabbix-agent
-      replace:
-        path: /etc/zabbix/zabbix_agentd.conf
-        regexp: '^Server=127\.0\.0\.1$'
-        replace: Server=127.0.0.1,0.0.0.0/0
-      notify:
-        - Restart Zabbix-agent
   handlers:
     - name: Restart Zabbix-server
       service:

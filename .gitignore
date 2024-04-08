@@ -7,3 +7,6 @@ Coursework_ssh*
 terraform-inventory.exe
 inv.txt
 *.deb
+*.py
+packages
+vars.yml

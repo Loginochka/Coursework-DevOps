@@ -1,0 +1,71 @@
+---
+- name: Access Zabbix Server via API
+  hosts: zbx_front
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Start session
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "user.login","params": {"username": "{{ zabbix_user }}","password": "{{ zabbix_password }}",},"id": 1, "auth": null}'
+        body_format: "json"
+        headers: 
+          Content-Type: "application/json"
+      register: login
+      failed_when: login.status != 200
+    - name: Get token 
+      set_fact:
+        token: "{{ login.json.result }}"
+
+
+    - name: Create Autoregistration Action in Zabbix
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          jsonrpc: "2.0"
+          method: "action.create"
+          params:
+            name: "Linux VM registration"
+            eventsource: 2
+            status: 0
+            filter:
+              evaltype: 2
+              conditions:
+                - conditiontype: 24
+                  operator: 2
+                  value: "Linux.autoreg"
+            operations: 
+              - operationtype: 2
+              - operationtype: 4
+                opgroup: [
+                  groupid: 2
+                ]
+              - operationtype: 6
+                optemplate: [
+                  templateid: 10001
+                ]       
+              - operationtype: 8   
+          auth: 
+            "{{ token }}"
+          id: 2
+      register: response
+
+    - debug:
+        var: response.json
+
+    - name: Ens session
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "user.logout","params": {},"id": 3,"auth": "{{ token }}" }'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+      register: response
+      failed_when: response.status != 200

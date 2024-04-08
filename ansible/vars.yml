@@ -2,3 +2,7 @@
 db_user: zabbix
 db_password: v6tB7YcuP4a5rmIn0guD
 db_name: zabbix
+zabbix_hostname: ru-zbxs-a.local
+zabbix_user: "Admin"
+zabbix_password: "zabbix"
+zabbix_url: "http://ru-zbxf-a.local/api_jsonrpc.php"

@@ -1,0 +1,74 @@
+---
+- name: Access Zabbix Server via API
+  hosts: zbx_front
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Start session
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "user.login","params": {"username": "{{ zabbix_user }}","password": "{{ zabbix_password }}",},"id": 1, "auth": null}'
+        body_format: "json"
+        headers: 
+          Content-Type: "application/json"
+      register: login
+      failed_when: login.status != 200
+
+    - name: Get token 
+      set_fact:
+        token: "{{ login.json.result }}"
+
+    - name: Get Zabbix Server host id
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "host.get","params": {"filter": {"host": ["Zabbix server"]}, "output": "hostid"},"id": 2,"auth": "{{ token }}" }'
+        body_format: "json"
+        headers: 
+          Content-Type: "application/json"
+      register: host_id
+      failed_when: login.status != 200
+
+    - name: Extract host id
+      set_fact:
+        id: "{{ host_id.json.result[0].hostid }}"
+
+    - name: Get interface id
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "hostinterface.get","params": {"output": ["interfaceid"],"filter": {"hostid": "{{ id }}","main": 1}},"id": 3, "auth": "{{ token }}"}'
+        body_format: "json"
+        headers:
+          Content-Type: "application/json"
+      register: in_id
+      failed_when: login.status != 200
+
+    - name: Extract interface id
+      set_fact:
+        int_id: "{{ in_id.json.result[0].interfaceid }}"
+
+
+    - name: Change Zabbix Server host IP & Activate DNS checking host for default 
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "hostinterface.update","params": {"interfaceid": "{{ int_id }}", "dns": "{{ zabbix_hostname }}","ip": "127.0.0.1","main": 1,"port": "10050","type": 1,"useip": 0},"id": 4,"auth": "{{ token }}" }'
+        body_format: "json"
+        headers: 
+          Content-Type: "application/json"
+      register: host_id
+      failed_when: login.status != 200
+
+    - name: Ens session
+      uri:
+        url: "{{ zabbix_url }}"
+        method: POST
+        body: '{"jsonrpc": "2.0","method": "user.logout","params": {},"id": 5,"auth": "{{ token }}" }'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+      register: response
+      failed_when: response.status != 200
