@@ -19,7 +19,6 @@
       set_fact:
         token: "{{ login.json.result }}"
 
-
     - name: Create Autoregistration Action in Zabbix
       uri:
         url: "{{ zabbix_url }}"
@@ -49,13 +48,16 @@
               - operationtype: 6
                 optemplate: [
                   templateid: 10001
-                ]       
+                ]
+              - operationtype: 6
+                optemplate: [
+                  templateid: 10267
+                ]           
               - operationtype: 8   
           auth: 
             "{{ token }}"
           id: 2
       register: response
-
     - debug:
         var: response.json
 

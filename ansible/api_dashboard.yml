@@ -18,23 +18,325 @@
     - name: Get token 
       set_fact:
         token: "{{ login.json.result }}"
-    - name: Read contents of the file
-      ansible.builtin.slurp:    
-        src: "{{ lookup() }}/dashboard_data.json"
-      register: file_content
 
-    - name: Create dashboard in Zabbix
+    - name: Create dashboard with graphin 
       uri:
         url: "{{ zabbix_url }}"
         method: POST
-        body_format: raw
-        body: "{{ file_content.content | b64decode }}"
         headers:
-          Content-Type: application/json
-          Authorization: "Bearer {{ token }}"
-        auth: 
-          "{{ token }}"
-        id: 2
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          jsonrpc: "2.0"
+          method: "dashboard.create"
+          params:
+            auto_start: 1
+            display_period: 30
+            name: "USE"
+            pages: [
+              {
+                display_period: "0",
+                    name: "",
+                    widgets: 
+                    [
+                      {
+                        fields: [
+                          {
+                            name: "ds.hosts.0.0",
+                            type: "1",
+                            value: "ru-ngx-a"
+                          },
+                          {
+                            name: "ds.items.0.0",
+                            type: "1",
+                            value: "Nginx: Requests per second"
+                          },
+                          {
+                            name: "ds.color.0",
+                            type: "1",
+                            value: "FF465C"
+                          },
+                          {
+                            name: "ds.type.0",
+                            type: "0",
+                            value: "2"
+                          },
+                          {
+                            name: "ds.hosts.1.0",
+                            type: "1",
+                            value: "ru-ngx-b"
+                          },
+                          {
+                            name: "ds.items.1.0",
+                            type: "1",
+                            value: "Nginx: Requests per second"
+                          },
+                          {
+                            name: "ds.color.1",
+                            type: "1",
+                            value: "B0AF07"
+                          },
+                          {
+                            name: "ds.type.1",
+                            type: "0",
+                            value: "3"
+                          },
+                          {
+                            name: "ds.transparency.1",
+                            type: "0",
+                            value: "0"
+                          },
+                          {
+                            name: "ds.axisy.1",
+                            type: "0",
+                            value: "1"
+                          }
+                        ],
+                          height: "5",
+                          name: "Requests for web",
+                          type: "svggraph",
+                          view_mode: "0",
+                          width: "12",
+                          x: "6",
+                          y: "0"
+                        },
+                        {
+                          fields: [
+                            {
+                              name: "ds.hosts.0.0",
+                              type: "1",
+                              value: "ru-ngx-a"
+                            },
+                            {
+                              name: "ds.items.0.0",
+                              type: "1",
+                              value: "Linux: CPU utilization"
+                            },
+                            {
+                              name: "ds.color.0",
+                              type: "1",
+                              value: "FF465C"
+                            },
+                            {
+                              name: "ds.hosts.1.0",
+                              type: "1",
+                              value: "ru-ngx-b"
+                            },
+                            {
+                              name: "ds.items.1.0",
+                              type: "1",
+                              value: "Linux: CPU utilization"
+                            },
+                            {
+                              name: "ds.color.1",
+                              type: "1",
+                              value: "B0AF07"
+                            },
+                            {
+                              name: "righty",
+                              type: "0",
+                              value: "0"
+                            }
+                        ],
+                          height: "5",
+                          name: "CPU",
+                          type: "svggraph",
+                          view_mode: "0",
+                          width: "12",
+                          x: "6",
+                          y: "5"
+                        },
+                        {
+                          fields: [
+                            {
+                              name: "ds.hosts.0.0",
+                              type: "1",
+                              value: "ru-ngx-a"
+                            },
+                            {
+                              name: "ds.items.0.0",
+                              type: "1",
+                              value: "Linux: Memory utilization"
+                            },
+                            {
+                              name: "ds.color.0",
+                              type: "1",
+                              value: "FF465C"
+                            },
+                            {
+                              name: "ds.hosts.1.0",
+                              type: "1",
+                              value: "ru-ngx-b"
+                            },
+                            {
+                              name: "ds.items.1.0",
+                              type: "1",
+                              value: "Linux: Memory utilization"
+                            },
+                            {
+                              name: "ds.color.1",
+                              type: "1",
+                              value: "B0AF07"
+                            },
+                            {
+                              name: "righty",
+                              type: "0",
+                              value: "0"
+                            }
+                        ],
+                          height: "5",
+                          name: "RAM",
+                          type: "svggraph",
+                          view_mode: "0",
+                          width: "12",
+                          x: "6",
+                          y: "10"
+                        },
+                        {
+                          fields: [
+                            {
+                              name: "ds.hosts.0.0",
+                              type: "1",
+                              value: "ru-ngx-a"
+                            },
+                            {
+                              name: "ds.items.0.0",
+                              type: "1",
+                              value: "vda: Disk utilization"
+                            },
+                            {
+                              name: "ds.color.0",
+                              type: "1",
+                              value: "FF465C"
+                            },
+                            {
+                              name: "ds.hosts.1.0",
+                              type: "1",
+                              value: "ru-ngx-b"
+                            },
+                            {
+                              name: "ds.items.1.0",
+                              type: "1",
+                              value: "vda: Disk utilization"
+                            },
+                            {
+                              name: "ds.color.1",
+                              type: "1",
+                              value: "B0AF07"
+                            },
+                            {
+                              name: "righty",
+                              type: "0",
+                              value: "0"
+                            }
+                        ],
+                          height: "5",
+                          name: "Disk",
+                          type: "svggraph",
+                          view_mode: "0",
+                          width: "12",
+                          x: "6",
+                          y: "15"
+                        },
+                        {
+                          fields: [
+                            {
+                              name: "ds.hosts.0.0",
+                              type: "1",
+                                value: "ru-ngx-a"
+                            },
+                            {
+                              name: "ds.items.0.0",
+                              type: "1",
+                              value: "Interface eth0: Outbound packets with errors"
+                            },
+                            {
+                              name: "ds.color.0",
+                              type: "1",
+                              value: "FF465C"
+                            },
+                            {
+                              name: "ds.hosts.1.0",
+                              type: "1",
+                              value: "ru-ngx-b"
+                            },
+                            {
+                              name: "ds.items.1.0",
+                              type: "1",
+                              value: "Interface eth0: Outbound packets with errors"
+                            },
+                            {
+                              name: "ds.color.1",
+                              type: "1",
+                              value: "B0AF07"
+                            },
+                            {
+                              name: "righty",
+                              type: "0",
+                              value: "0"
+                            },
+                            {
+                              name: "ds.items.0.1",
+                              type: "1",
+                              value: "Interface eth0: Inbound packets with errors"
+                            },
+                            {
+                              name: "ds.hosts.2.0",
+                              type: "1",
+                              value: "ru-ngx-a"
+                            },
+                            {
+                              name: "ds.items.2.0",
+                              type: "1",
+                              value: "Interface eth0: Inbound packets with errors"
+                            } ,
+                            {
+                              name: "ds.color.2",
+                              type: "1",
+                              value: "0EC9AC"
+                            },
+                            {
+                              name: "ds.hosts.3.0",
+                              type: "1",
+                              value: "ru-ngx-b"
+                            },
+                            {
+                              name: "ds.items.3.0",
+                              type: "1",
+                              value: "Interface eth0: Inbound packets with errors"
+                            },
+                            {
+                              name: "ds.color.3",
+                              type: "1",
+                              value: "524BBC"
+                            }
+                        ],
+                          height: "6",
+                          name: "Network",
+                          type: "svggraph",
+                          view_mode: "0",
+                          width: "12",
+                          x: "6",
+                          y: "20"
+                        }
+                    ]
+              }
+            ]
+            userGroups: [
+              {
+                permission: "2",
+                usrgrpid: "7"
+              }
+            ]
+            users: [
+              {
+                permission: "3",
+                userid: "1"
+              }
+            ]
+          auth:
+            "{{ token }}"
+          id: 2
       register: response
     - debug:
         var: response.json
