@@ -1,0 +1,68 @@
+---
+- name: Elastic installation
+  hosts: elastic
+  become: true
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Update repo
+      apt:
+        update_cache: yes
+    - name: Install packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      register: Check
+      with_items:
+        - pip
+        - acl
+        - net-tools
+    - name: Download elasticsearch
+      copy:
+        src: /home/ansible-vm/elasticsearch-8.13.2-amd64.deb
+        dest: /tmp/elasticsearch-8.13.2-amd64.deb
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '0655'
+      register: el_inst
+      when: Check.changed
+
+    - name: Download kibana
+      copy:
+        src: /home/ansible-vm/kibana-8.13.2-amd64.deb
+        dest: /tmp/kibana-8.13.2-amd64.deb
+        owner: kibana
+        group: kibana
+        mode: '0655'
+      when: Check.changed
+    
+    - name: Install elasticsearch and kibana
+      apt:
+        deb: "{{ item }}"
+      with_items:
+      - /tmp/elasticsearch-8.13.2-amd64.deb
+      - /tmp/kibana-8.13.2-amd64.deb
+
+    - name: Replace elasticsearch config
+      template:
+        src: /home/ansible-vm/elasticsearch.yml
+        dest: /etc/elasticsearch/elasticsearch.yml
+        owner: elasticsearch
+        group: elasticsearch
+        mode: '0666'
+      register: config_check
+      when: el_inst.changed
+
+    - name: Start up elasticsearch
+      service:
+        name: elasticsearch
+        daemon_reload: true
+        enabled: true
+        state: started
+      when: config_check.changed
+
+    - name: Check 9200 
+      uri:
+        url: http://ru-elk-a.local:9200
+        status_code: 200
+        return_content: true
