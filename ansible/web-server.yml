@@ -107,9 +107,9 @@
     copy:
       src: /home/ansible-vm/filebeat.yml
       dest: /etc/filebeat/filebeat.yml
-      owner: '{{ ansible_user }}'
+      owner: root
       group: '{{ ansible_user }}'
-      mode: '0666'
+      mode: '0644'
       backup: true
     notify:
       - Restart filebeat

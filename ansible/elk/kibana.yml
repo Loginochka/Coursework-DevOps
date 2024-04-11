@@ -1,0 +1,35 @@
+---
+- name: Kibana installation
+  hosts: kibana
+  become: true
+  tasks:
+    - name: Download kibana
+      copy:
+        src: /home/ansible-vm/kibana-8.13.2-amd64.deb
+        dest: /tmp/kibana-8.13.2-amd64.deb
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '0655'
+        force: no
+
+    - name: Install kibana
+      apt:
+        deb: "{{ item }}"
+      with_items:
+      - /tmp/kibana-8.13.2-amd64.deb
+
+    - name: Replace kibana config
+      template:
+        src: /home/ansible-vm/kibana.yml
+        dest: /etc/kibana/kibana.yml
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '0644'
+      register: config_check
+
+    - name: Start Kibana
+      service:
+        name: kibana
+        daemon_reload: yes
+        enabled: true
+        state: restarted

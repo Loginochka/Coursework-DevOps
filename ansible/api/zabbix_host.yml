@@ -1,5 +1,5 @@
 ---
-- name: Access Zabbix Server via API
+- name: Configure zabbix gost
   hosts: zbx_front
   become: true
   vars_files:

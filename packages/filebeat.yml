@@ -55,8 +55,8 @@ setup.template.settings:
 # This requires a Kibana endpoint configuration.
 setup.kibana:
   host: "ru-kbn-a.local:5601" 
-  username: "my_kibana_user"  
-  password: "{pwd}"
+  # username: "my_kibana_user"  
+  # password: "{pwd}"
 # ================================== Outputs ===================================
 
 # Configure what output to use when sending the data collected by the beat.
