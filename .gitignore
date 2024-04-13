@@ -7,3 +7,4 @@ Coursework_ssh*
 *.deb
 *.py
 */vars.yml
+ansible/vars.yml
