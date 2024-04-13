@@ -19,7 +19,7 @@ Zabbix модуль
 ===
 Было решено вместо Prometheus использовать zabbix
 
-Файлы находятся в папке elk *[Elasticsearch](https://github.com/Loginochka/Coursework-DevOps/tree/main/zabbix)*
+Файлы находятся в папке elk *[Elasticsearch](https://github.com/Loginochka/Coursework-DevOps/tree/main/ansible/zabbix)*
 
 Компоненты сервиса подняты отдельно, для разграничения доступов до ВМ и оптимизации ресурсов. И так более красиово )
 
