@@ -10,7 +10,7 @@ Terraform модуль
 ---
 Elasticsearch модуль
 ==
-Файлы находятся в папке elk *[Elasticsearch](https://github.com/Loginochka/Coursework-DevOps/tree/main/elk)*
+Файлы находятся в папке elk *[Elasticsearch](https://github.com/Loginochka/Coursework-DevOps/tree/main/ansible/elk)*
 
 Достпу к кибане по ссылке: *[Kibana](http://62.84.114.252:5601/app/observability/overview?rangeFrom=now-1d&rangeTo=now)*
 
@@ -23,7 +23,7 @@ Zabbix модуль
 
 Компоненты сервиса подняты отдельно, для разграничения доступов до ВМ и оптимизации ресурсов. И так более красиово )
 
-Настройка мониторинга осуществляется через API запросы *[api](https://github.com/Loginochka/Coursework-DevOps/tree/main/api)*
+Настройка мониторинга осуществляется через API запросы *[api](https://github.com/Loginochka/Coursework-DevOps/tree/main/ansible/api)*
 
 Доступ к Zabbix логин\пароль 
 + Admin\zabbix
