@@ -1,3 +1,4 @@
+#---------Provider________________________________
 terraform {
   required_providers {
     yandex = {
@@ -24,65 +25,64 @@ resource "yandex_resourcemanager_folder_iam_member" "admin" {
     yandex_iam_service_account.terradmin,
   ]
 }
-
 #_______________ALB________________________________
 resource "yandex_alb_target_group" "web-server-tg" {
-  name      = "web-server-tg"
+  name = "web-server-tg"
 
   target {
-    subnet_id = "${yandex_vpc_subnet.private-a.id}"
-    ip_address   = "${yandex_compute_instance.vm-nginx-1.network_interface.0.ip_address}"
+    subnet_id  = yandex_vpc_subnet.private-a.id
+    ip_address = yandex_compute_instance.vm-nginx-1.network_interface.0.ip_address
   }
 
   target {
-    subnet_id = "${yandex_vpc_subnet.private-b.id}"
-    ip_address   = "${yandex_compute_instance.vm-nginx-2.network_interface.0.ip_address}"
+    subnet_id  = yandex_vpc_subnet.private-b.id
+    ip_address = yandex_compute_instance.vm-nginx-2.network_interface.0.ip_address
   }
 }
 resource "yandex_alb_http_router" "web-router" {
-  name      = "web-router"
+  name = "web-router"
 }
 resource "yandex_alb_virtual_host" "vh-for-web" {
-  name                    = "web-vh"
-  http_router_id          = "${yandex_alb_http_router.web-router.id}"
+  name           = "web-vh"
+  http_router_id = yandex_alb_http_router.web-router.id
   route {
-    name                  = "web"
+    name = "web"
     http_route {
       http_route_action {
-        backend_group_id  = "${yandex_alb_backend_group.web-backend-group.id}"
-        timeout           = "60s"
+        backend_group_id = yandex_alb_backend_group.web-backend-group.id
+        timeout          = "60s"
       }
     }
   }
-}    
+}
 resource "yandex_alb_backend_group" "web-backend-group" {
-  name      = "web-backend-group"
+  name = "web-backend-group"
   http_backend {
-    name = "web-http-backend"
-    weight = "1"
-    port = "80"
+    name             = "web-http-backend"
+    weight           = "1"
+    port             = "80"
     target_group_ids = ["${yandex_alb_target_group.web-server-tg.id}"]
     load_balancing_config {
       panic_threshold = 50
-      mode = "ROUND_ROBIN"
-    }    
+      mode            = "ROUND_ROBIN"
+    }
     healthcheck {
-      timeout = "5s"
+      timeout  = "5s"
       interval = "5s"
       http_healthcheck {
-        path  = "/"
+        path = "/"
       }
     }
   }
 }
 resource "yandex_alb_load_balancer" "alb-balancer" {
-  name        = "alb-balancer"
-  network_id  = "${yandex_vpc_network.cod.id}"
+  name               = "alb-balancer"
+  network_id         = yandex_vpc_network.cod.id
   security_group_ids = ["${yandex_vpc_security_group.ALB.id}", "${yandex_vpc_security_group.web-server.id}"]
   allocation_policy {
     location {
       zone_id   = "ru-central1-a"
-      subnet_id = "${yandex_vpc_subnet.private-a.id}"
+      subnet_id = yandex_vpc_subnet.private-a.id
     }
   }
 
@@ -93,22 +93,21 @@ resource "yandex_alb_load_balancer" "alb-balancer" {
         external_ipv4_address {
         }
       }
-      ports = [ "80", "443" ]
-    }    
+      ports = ["80", "443"]
+    }
     http {
       handler {
-        http_router_id = "${yandex_alb_http_router.web-router.id}"
+        http_router_id = yandex_alb_http_router.web-router.id
       }
     }
   }
   log_options {
     discard_rule {
       http_code_intervals = ["HTTP_2XX"]
-      discard_percent = 75
+      discard_percent     = 75
     }
   }
 }
-
 #______________Instance___________________________
 resource "yandex_compute_instance" "vm-nginx-1" {
   name               = "vm-nginx-1"
@@ -133,12 +132,11 @@ resource "yandex_compute_instance" "vm-nginx-1" {
 
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-a.id
-    security_group_ids = ["${yandex_vpc_security_group.web-server.id}"]
-    nat                = "true"
+    security_group_ids = [yandex_vpc_security_group.web-server.id]
   }
 
   metadata = {
-    user-data = "${file("meta-vm.txt")}"
+    user-data = file("meta-vm.txt")
   }
   timeouts {
     create = "60m"
@@ -167,12 +165,11 @@ resource "yandex_compute_instance" "vm-nginx-2" {
 
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-b.id
-    security_group_ids = ["${yandex_vpc_security_group.web-server.id}"]
-    nat                = "true"
+    security_group_ids = [yandex_vpc_security_group.web-server.id]
   }
 
   metadata = {
-    user-data = "${file("meta-vm.txt")}"
+    user-data = file("meta-vm.txt")
   }
   timeouts {
     create = "60m"
@@ -199,12 +196,12 @@ resource "yandex_compute_instance" "vm-kibana" {
   }
   network_interface {
     subnet_id          = yandex_vpc_subnet.public.id
-    security_group_ids = ["${yandex_vpc_security_group.kibana.id}"]
-    nat = "true"
+    security_group_ids = [yandex_vpc_security_group.kibana.id]
+    nat                = "true"
   }
 
   metadata = {
-    user-data = "${file("meta-vm.txt")}"
+    user-data = file("meta-vm.txt")
   }
   timeouts {
     create = "60m"
@@ -231,12 +228,11 @@ resource "yandex_compute_instance" "vm-elastic" {
   }
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-a.id
-    security_group_ids = ["${yandex_vpc_security_group.ELK.id}"]
-    nat = "true"
+    security_group_ids = [yandex_vpc_security_group.ELK.id]
   }
 
   metadata = {
-    user-data = "${file("meta-vm.txt")}"
+    user-data = file("meta-vm.txt")
   }
   timeouts {
     create = "60m"
@@ -263,12 +259,12 @@ resource "yandex_compute_instance" "vm-zbx-front" {
   }
   network_interface {
     subnet_id          = yandex_vpc_subnet.public.id
-    security_group_ids = ["${yandex_vpc_security_group.zabbix-front.id}"]
+    security_group_ids = [yandex_vpc_security_group.zabbix-front.id]
     nat                = "true"
   }
 
   metadata = {
-    user-data = "${file("meta-vm.txt")}"
+    user-data = file("meta-vm.txt")
   }
   timeouts {
     create = "60m"
@@ -295,12 +291,11 @@ resource "yandex_compute_instance" "vm-zbx-db" {
   }
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-a.id
-    security_group_ids = ["${yandex_vpc_security_group.zabbix-back.id}"]
-    nat                = "true"
+    security_group_ids = [yandex_vpc_security_group.zabbix-back.id]
   }
 
   metadata = {
-    user-data = "${file("meta-vm.txt")}"
+    user-data = file("meta-vm.txt")
   }
   timeouts {
     create = "60m"
@@ -330,11 +325,10 @@ resource "yandex_compute_instance" "vm-zbx-server" {
   network_interface {
     subnet_id          = yandex_vpc_subnet.private-a.id
     security_group_ids = ["${yandex_vpc_security_group.zabbix-back.id}"]
-    nat                = "true"
   }
 
   metadata = {
-    user-data = "${file("meta-vm.txt")}"
+    user-data = file("meta-vm.txt")
   }
   timeouts {
     create = "60m"
@@ -363,12 +357,12 @@ resource "yandex_compute_instance" "vm-bastion" {
 
   network_interface {
     subnet_id          = yandex_vpc_subnet.public.id
-    security_group_ids = ["${yandex_vpc_security_group.bastion-host.id}"]
+    security_group_ids = [yandex_vpc_security_group.bastion-host.id]
     nat                = "true"
   }
 
   metadata = {
-    user-data = "${file("meta.txt")}"
+    user-data = file("meta.txt")
   }
   timeouts {
     create = "60m"
@@ -391,7 +385,6 @@ resource "yandex_compute_snapshot_schedule" "instance-snap-schedule" {
     "${yandex_compute_instance.vm-nginx-2.boot_disk[0].disk_id}",
   ]
 }
-
 #________________NETWORK_______________________
 resource "yandex_vpc_network" "cod" {
   name = "cod"
@@ -401,18 +394,34 @@ resource "yandex_vpc_subnet" "private-a" {
   zone           = "ru-central1-a"
   network_id     = yandex_vpc_network.cod.id
   v4_cidr_blocks = ["10.10.10.0/28"]
+  route_table_id = yandex_vpc_route_table.route-table.id
 }
 resource "yandex_vpc_subnet" "private-b" {
   name           = "private-b"
   zone           = "ru-central1-b"
   network_id     = yandex_vpc_network.cod.id
   v4_cidr_blocks = ["10.10.11.0/28"]
+  route_table_id = yandex_vpc_route_table.route-table.id
 }
 resource "yandex_vpc_subnet" "public" {
   name           = "public"
   zone           = "ru-central1-a"
   network_id     = yandex_vpc_network.cod.id
   v4_cidr_blocks = ["10.10.20.0/28"]
+}
+resource "yandex_vpc_gateway" "nat-gateway" {
+  folder_id = var.folder
+  name      = "nat-gateway"
+  shared_egress_gateway {}
+}
+resource "yandex_vpc_route_table" "route-table" {
+  folder_id  = var.folder
+  name       = "route-table"
+  network_id = yandex_vpc_network.cod.id
+  static_route {
+    destination_prefix = "0.0.0.0/0"
+    gateway_id         = yandex_vpc_gateway.nat-gateway.id
+  }
 }
 #______________Security Group________________
 resource "yandex_vpc_security_group" "bastion-host" {
@@ -511,24 +520,6 @@ resource "yandex_vpc_security_group" "zabbix-back" {
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
 }
-resource "yandex_vpc_security_group" "ELK" {
-  network_id = yandex_vpc_network.cod.id
-  name       = "SG for ELK"
-  ingress {
-    protocol       = "ANY"
-    port           = "9200"
-    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
-  }
-  ingress {
-    protocol          = "TCP"
-    port              = "22"
-    security_group_id = yandex_vpc_security_group.bastion-host.id
-  }
-  egress {
-    protocol       = "ANY"
-    v4_cidr_blocks = ["0.0.0.0/0"]
-  }
-}
 resource "yandex_vpc_security_group" "zabbix-front" {
   network_id = yandex_vpc_network.cod.id
   name       = "Web zabbix"
@@ -547,17 +538,24 @@ resource "yandex_vpc_security_group" "zabbix-front" {
     port           = "80"
     v4_cidr_blocks = ["0.0.0.0/0", "10.10.20.0/28"]
   }
-  # ingress {
-  #   protocol          = "ANY"
-  #   port              = "5432"
-  #   security_group_id = yandex_vpc_security_group.zabbix-back.id
-  # }
-  # ingress {
-  #   protocol          = "ANY"
-  #   from_port         = "10050"
-  #   to_port           = "10053"
-  #   security_group_id = yandex_vpc_security_group.zabbix-back.id
-  # }
+  egress {
+    protocol       = "ANY"
+    v4_cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+resource "yandex_vpc_security_group" "ELK" {
+  network_id = yandex_vpc_network.cod.id
+  name       = "SG for ELK"
+  ingress {
+    protocol       = "ANY"
+    port           = "9200"
+    v4_cidr_blocks = ["10.10.10.0/28", "10.10.11.0/28", "10.10.20.0/28"]
+  }
+  ingress {
+    protocol          = "TCP"
+    port              = "22"
+    security_group_id = yandex_vpc_security_group.bastion-host.id
+  }
   egress {
     protocol       = "ANY"
     v4_cidr_blocks = ["0.0.0.0/0"]
@@ -589,16 +587,16 @@ resource "yandex_vpc_security_group" "ALB" {
     port           = 80
     v4_cidr_blocks = ["0.0.0.0/0"]
   }
-  ingress {
-    protocol          = "ANY"
-    from_port         = 0
-    to_port           = 65535
-    predefined_target = "self_security_group"
-  }
-  ingress {
-    protocol          = "TCP"
-    predefined_target = "loadbalancer_healthchecks"
-  }
+#   ingress {
+#     protocol          = "ANY"
+#     from_port         = 0
+#     to_port           = 65535
+#     predefined_target = "self_security_group"
+#   }
+#   ingress {
+#     protocol          = "TCP"
+#     predefined_target = "loadbalancer_healthchecks"
+#   }
   ingress {
     protocol       = "ANY"
     port           = 443

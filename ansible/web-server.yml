@@ -2,7 +2,7 @@
 - name: Configure web-servers
   hosts: nginx
   become: yes
-  pre_tasks:
+  tasks:
     - name: Download zabbix repo
       get_url:
         url: >-
@@ -29,90 +29,108 @@
         - acl
         - zabbix-agent
         - nginx
-  tasks:
-  - name: Start nginx
-    service:
-      name: nginx
-      state: started
-      enabled: true
+    - name: Change nginx config
+      copy:
+        src: /home/ansible-vm/nginx.conf
+        dest: /etc/nginx/nginx.conf
 
-  - name: Check nginx for 200
-    uri:
-      url: http://localhost:80
-      status_code: 200
-      return_content: true
+    - name: Change default site
+      copy:
+        src: /home/ansible-vm/index.nginx-debian.html
+        dest: /var/www/html/index.nginx-debian.html
+        owner: www-data
+        group: www-data
+        
+    - name: Change default site conf
+      copy:
+        src: /home/ansible-vm/default
+        dest: /etc/nginx/sites-enabled/default
 
-  - name: Get system hostname
-    ansible.builtin.command: hostname
-    register: hostname_result
+    - name: Start nginx
+      service:
+        name: nginx
+        state: started
+        enabled: true
 
-  - name: Change zabbix server IP
-    replace:
-      path: /etc/zabbix/zabbix_agentd.conf
-      regexp: '^Server=127\.0\.0\.1$'
-      replace: Server=ru-zbxs-a.local
-    notify:
-      - Restart zabbix
+    - name: Check nginx for 200
+      uri:
+        url: http://localhost:80
+        status_code: 200
+        return_content: true
+      notify:
+        - Restart nginx
 
-  - name: Change zabbix ServerActive IP
-    replace:
-      path: /etc/zabbix/zabbix_agentd.conf
-      regexp: '^ServerActive=127.0.0.1'
-      replace: ServerActive=ru-zbxs-a.local:10051
+    - name: Get system hostname
+      ansible.builtin.command: hostname
+      register: hostname_result
 
-  - name: Change zabbix Hostname
-    lineinfile:
-      path: /etc/zabbix/zabbix_agentd.conf
-      line: "Hostname={{ hostname_result.stdout }}"
+    - name: Change zabbix server IP
+      replace:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^Server=127\.0\.0\.1$'
+        replace: Server=ru-zbxs-a.local
+      notify:
+        - Restart zabbix
 
-  - name: Change zabbix AllowKey
-    lineinfile:
-      path: /etc/zabbix/zabbix_agentd.conf
-      line: AllowKey=system.run[*]
+    - name: Change zabbix ServerActive IP
+      replace:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^ServerActive=127.0.0.1'
+        replace: ServerActive=ru-zbxs-a.local:10051
 
-  - name: Change zabbix HostInterface
-    lineinfile:
-      path: /etc/zabbix/zabbix_agentd.conf
-      line: "HostInterface={{ hostname_result.stdout }}"
+    - name: Change zabbix Hostname
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        line: "Hostname={{ hostname_result.stdout }}"
 
-  - name: Change zabbix ListenIP
-    lineinfile:
-      path: /etc/zabbix/zabbix_agentd.conf
-      line: ListenIP=0.0.0.0
+    - name: Change zabbix AllowKey
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        line: AllowKey=system.run[*]
 
-  - name: Change zabbix LogRemoteCommands
-    replace:
-      path: /etc/zabbix/zabbix_agentd.conf
-      regexp: '^LogRemoteCommands=0'
-      replace: LogRemoteCommands=1
+    - name: Change zabbix HostInterface
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        line: "HostInterface={{ hostname_result.stdout }}"
 
-  - name: Change HostMetadata
-    lineinfile:
-      path: /etc/zabbix/zabbix_agentd.conf
-      line: HostMetadata=Linux.autoreg
+    - name: Change zabbix ListenIP
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        line: ListenIP=0.0.0.0
 
-  - name: Download filebeat
-    copy:
-      src: /home/ansible-vm/filebeat-8.13.0-amd64.deb
-      dest: /tmp/filebeat-8.13.0-amd64.deb
-      owner: '{{ ansible_user }}'
-      group: '{{ ansible_user }}'
-      mode: '0655'
+    - name: Change zabbix LogRemoteCommands
+      replace:
+        path: /etc/zabbix/zabbix_agentd.conf
+        regexp: '^LogRemoteCommands=0'
+        replace: LogRemoteCommands=1
 
-  - name: Install filebeat
-    apt:
-      deb: /tmp/filebeat-8.13.0-amd64.deb
+    - name: Change HostMetadata
+      lineinfile:
+        path: /etc/zabbix/zabbix_agentd.conf
+        line: HostMetadata=Linux.autoreg
 
-  - name: Change config filebeat
-    copy:
-      src: /home/ansible-vm/filebeat.yml
-      dest: /etc/filebeat/filebeat.yml
-      owner: root
-      group: '{{ ansible_user }}'
-      mode: '0644'
-      backup: true
-    notify:
-      - Restart filebeat
+    - name: Download filebeat
+      copy:
+        src: /home/ansible-vm/filebeat-8.13.0-amd64.deb
+        dest: /tmp/filebeat-8.13.0-amd64.deb
+        owner: '{{ ansible_user }}'
+        group: '{{ ansible_user }}'
+        mode: '0655'
+
+    - name: Install filebeat
+      apt:
+        deb: /tmp/filebeat-8.13.0-amd64.deb
+
+    - name: Change config filebeat
+      copy:
+        src: /home/ansible-vm/filebeat.yml
+        dest: /etc/filebeat/filebeat.yml
+        owner: root
+        group: '{{ ansible_user }}'
+        mode: '0644'
+        backup: true
+      notify:
+        - Restart filebeat
 
   handlers:
     - name: Restart zabbix
@@ -122,4 +140,8 @@
     - name: Restart filebeat
       service:
         name: filebeat
-        state: restarted  
+        state: restarted
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted

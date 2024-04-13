@@ -32,7 +32,7 @@
           params:
             auto_start: 1
             display_period: 30
-            name: "USE"
+            name: "Concept-USE"
             pages: [
               {
                 display_period: "0",
@@ -79,7 +79,7 @@
                           {
                             name: "ds.type.1",
                             type: "0",
-                            value: "3"
+                            value: "2"
                           },
                           {
                             name: "ds.transparency.1",
@@ -248,7 +248,7 @@
                             {
                               name: "ds.items.0.0",
                               type: "1",
-                              value: "Interface eth0: Outbound packets with errors"
+                              value: "Interface eth0: Operational status"
                             },
                             {
                               name: "ds.color.0",
@@ -263,7 +263,7 @@
                             {
                               name: "ds.items.1.0",
                               type: "1",
-                              value: "Interface eth0: Outbound packets with errors"
+                              value: "Interface eth0: Operational status"
                             },
                             {
                               name: "ds.color.1",
@@ -274,41 +274,6 @@
                               name: "righty",
                               type: "0",
                               value: "0"
-                            },
-                            {
-                              name: "ds.items.0.1",
-                              type: "1",
-                              value: "Interface eth0: Inbound packets with errors"
-                            },
-                            {
-                              name: "ds.hosts.2.0",
-                              type: "1",
-                              value: "ru-ngx-a"
-                            },
-                            {
-                              name: "ds.items.2.0",
-                              type: "1",
-                              value: "Interface eth0: Inbound packets with errors"
-                            } ,
-                            {
-                              name: "ds.color.2",
-                              type: "1",
-                              value: "0EC9AC"
-                            },
-                            {
-                              name: "ds.hosts.3.0",
-                              type: "1",
-                              value: "ru-ngx-b"
-                            },
-                            {
-                              name: "ds.items.3.0",
-                              type: "1",
-                              value: "Interface eth0: Inbound packets with errors"
-                            },
-                            {
-                              name: "ds.color.3",
-                              type: "1",
-                              value: "524BBC"
                             }
                         ],
                           height: "6",
