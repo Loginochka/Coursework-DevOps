@@ -46,19 +46,17 @@
         src: /home/ansible-vm/default
         dest: /etc/nginx/sites-enabled/default
 
-    - name: Start nginx
-      service:
-        name: nginx
-        state: started
-        enabled: true
-
     - name: Check nginx for 200
       uri:
         url: http://localhost:80
         status_code: 200
         return_content: true
-      notify:
-        - Restart nginx
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+        daemon_reload: true
 
     - name: Get system hostname
       ansible.builtin.command: hostname
@@ -140,8 +138,4 @@
     - name: Restart filebeat
       service:
         name: filebeat
-        state: restarted
-    - name: Restart nginx
-      service:
-        name: nginx
         state: restarted

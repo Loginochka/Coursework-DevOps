@@ -27,14 +27,14 @@
         mode: '0644'
       register: config_check
 
-    - name: Check status 5601
-      uri:
-        url: http://localhost:5601
-        status_code: 200
-
     - name: Start Kibana
       service:
         name: kibana
         daemon_reload: yes
         enabled: true
         state: restarted
+    - name: Check status 5601
+      uri:
+        url: http://localhost:5601
+        status_code: 200
+        timeout: 180
