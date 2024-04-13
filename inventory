@@ -1,0 +1,38 @@
+[nginx]
+10.10.10.6
+10.10.11.14
+
+[ALB]
+158.160.145.200
+
+[elastic]
+10.10.10.7
+
+[kibana]
+10.10.20.11
+
+[zbx_db]
+10.10.10.5
+
+[zbx_front]
+10.10.20.14
+
+[zbx_server]
+10.10.10.13
+
+[all:vars]
+ALB = "158.160.145.200"
+vm-bastion = "51.250.71.116"
+vm-elastic = "10.10.10.7"
+vm-kibana = "10.10.20.11"
+vm-kibana-nat = "62.84.114.252"
+vm-nginx-1 = "10.10.10.6"
+vm-nginx-2 = "10.10.11.14"
+vm-zbx-db = "10.10.10.5"
+vm-zbx-front = "10.10.20.14"
+vm-zbx-front-nat = "158.160.113.248"
+vm-zbx-server = "10.10.10.13"
+ansible_ssh_common_args="-o StrictHostKeyChecking=no -o ProxyCommand=\"ssh -W %h:%p -q bastion@51.250.71.116\""
+ansible_ssh_user=ansible
+ansible_ssh_private_key_file=/home/ansible-vm/.ssh/vm
+host_key_checking = False
